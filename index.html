@@ -1,0 +1,167 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-sm" id='myContainer'>
+                    <h2>Calcula tus calorias y macronutrientes</h2>
+                    <form id="calcform">
+                        <div class="form-group">
+                            <label for="gender">Sexo:</label>
+                            <select class="form-control" id="gender">
+                                <option value="5">Masculino</option>
+                                <option value="-161">Femenino</option>
+                            </select>
+                        </div>
+                        <div class="row col">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="age">Edad:</label>
+                                    <input type="number" class="form-control" min="1" max="99" id="age" placeholder="Edad" required>
+                                    <!-- <small id="ageHelp" class="form-text text-muted">Tu edad nos ayuda a determinar tu consumo calórico</small> -->
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="weight">Peso (kg):</label>
+                                    <input type="number" class="form-control" min="1" id="weight" placeholder="Peso (kg)" required>
+                                    <!-- <small id="ageHelp" class="form-text text-muted">Tu edad nos ayuda a determinar tu consumo calórico</small> -->
+                                </div>
+                            </div>
+                            <div class="col"> 
+                                <div class="form-group">
+                                    <label for="height">Altura:</label>
+                                    <input type="number" class="form-control" min="1" id="height" placeholder="Altura (cm)" required>
+                                    <!-- <small id="ageHelp" class="form-text text-muted">Tu edad nos ayuda a determinar tu consumo calórico</small> -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="activitySelect">Nivel de actividad:</label>
+                            <select class="form-control" id="activitySelect">
+                                <option value="1.2">Sedentario</option>
+                                <option value="1.375">Ligeramente Activo</option>
+                                <option value="1.55">Moderadamente Activo</option>
+                                <option value="1.725">Muy Active</option>
+                                <option value="1.9">Extra Activo</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="objective">Objetivo:</label>
+                            <select class="form-control" id="objective">
+                                <option value="-500">Quemar grasa</option>
+                                <option value="0">Mantener resultados</option>
+                                <option value="500">Aumentar musculo</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Ver mis resultados</button>
+                    </form>
+                    <div id="results"></div>
+                </div>
+            </div>
+        </div>
+        <script>
+            var form = document.getElementById("calcform");
+            function renderResults(isResize){
+                var age = document.getElementById("age").value;
+                var height = document.getElementById("height").value;
+                var weight = document.getElementById("weight").value;
+                var activity = document.getElementById("activitySelect").value;
+                var objective = document.getElementById("objective").value;
+                var gender = document.getElementById("gender").value;
+
+                age = Number(age)
+                height = Number(height)
+                weight = Number(weight)
+                activity = Number(activity)
+                objective = Number(objective)
+                gender = Number(gender)
+
+                var calories = 10 * weight + 6.25 * height - 5 * age + gender
+                var tdee = calories * activity
+                var intake = tdee + objective
+                var protein = (0.35 * intake) / 4;
+                var carbs = (0.4 * intake) / 4;
+                var fats = (0.25 * intake) / 9;
+
+                calories = Math.round(calories)
+                tdee = Math.round(tdee)
+                intake = Math.round(intake)
+                protein = Math.round(protein)
+                carbs = Math.round(carbs)
+                fats = Math.round(fats)
+
+                console.log(calories, tdee, intake, protein, carbs, fats)
+                var resultsDiv = document.getElementById("results")
+                resultsDiv.innerHTML = ""
+                resultsDiv.appendChild(document.createElement("hr"))
+
+                var dashboard = document.createElement("div")
+                var chart = document.createElement(
+                    'canvas',
+                    { 
+                        width: 200,
+                        height: 200
+                    }
+                )
+                var ctx = chart.getContext('2d');
+                var myChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Proteina', 'Carbohidratos', 'Grasas'],
+                        datasets: [{
+                            label: 'Macronutrientes',
+                            data: [protein, carbs, fats],
+                            backgroundColor: [
+                                '#0fd43d',
+                                '#1b53e0',
+                                '#db0b3c',
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        tooltips: {
+                            enabled: false
+                        },
+                        plugins: {
+                            datalabels: {
+                                formatter: (value, ctx) => {
+                                    let sum = 0;
+                                    let dataArr = ctx.chart.data.datasets[0].data;
+                                    dataArr.map(data => {
+                                        sum += data;
+                                    });
+                                    let percentage = (value*100 / sum).toFixed(2)+"%";
+                                    return value + " grs";
+                                },
+                                color: '#fff',
+                            }
+                        }
+                    }
+                    });
+                dashboard.innerHTML = `
+                    <h3>TDEE (Gasto de energia): <b>${tdee}</b></h3>
+                    <h3>Total de calorias(según objetivo): <b>${intake}</b></h3>
+                    <br>
+                    <h4>Macronutrientes:</h4>
+                `
+                dashboard.appendChild(chart)
+                resultsDiv.appendChild(dashboard)
+            }
+            form.onsubmit = function (event){
+                event.preventDefault()
+                renderResults(false)
+            }
+            window.onresize = function(event){
+                renderResults(true)
+            }
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    </body>
+</html>
