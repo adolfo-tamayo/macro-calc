@@ -2,22 +2,22 @@
     <head>
         <meta charset="UTF-8">
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
         <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
-    <body>
+    <body style="font-family: 'Roboto', sans-serif;">
         <div class="container">
             <div class="row">
-                <div class="col-sm" id='myContainer'>
-                    <h2>Calcula tus calorias y macronutrientes</h2>
+                <div class="col-sm" id='myContainer' style="padding: 2em;">
                     <form id="calcform">
                         <div class="form-group">
                             <label for="gender">Sexo:</label>
                             <select class="form-control" id="gender">
-                                <option value="5">Masculino</option>
-                                <option value="-161">Femenino</option>
+                                <option value="m">Masculino</option>
+                                <option value="f">Femenino</option>
                             </select>
                         </div>
-                        <div class="row col">
+                        <div class="row">
                             <div class="col">
                                 <div class="form-group">
                                     <label for="age">Edad:</label>
@@ -27,14 +27,14 @@
                             </div>
                             <div class="col">
                                 <div class="form-group">
-                                    <label for="weight">Peso (kg):</label>
+                                    <label for="weight">Peso(kg):</label>
                                     <input type="number" class="form-control" min="1" id="weight" placeholder="Peso (kg)" required>
                                     <!-- <small id="ageHelp" class="form-text text-muted">Tu edad nos ayuda a determinar tu consumo calórico</small> -->
                                 </div>
                             </div>
                             <div class="col"> 
                                 <div class="form-group">
-                                    <label for="height">Altura:</label>
+                                    <label for="height">Altura(cm):</label>
                                     <input type="number" class="form-control" min="1" id="height" placeholder="Altura (cm)" required>
                                     <!-- <small id="ageHelp" class="form-text text-muted">Tu edad nos ayuda a determinar tu consumo calórico</small> -->
                                 </div>
@@ -43,22 +43,21 @@
                         <div class="form-group">
                             <label for="activitySelect">Nivel de actividad:</label>
                             <select class="form-control" id="activitySelect">
-                                <option value="1.2">Sedentario</option>
-                                <option value="1.375">Ligeramente Activo</option>
-                                <option value="1.55">Moderadamente Activo</option>
-                                <option value="1.725">Muy Active</option>
-                                <option value="1.9">Extra Activo</option>
+                                <option value="1.37">Ligeramente Activo (Ejercicio moderado y trabajo sedentario)</option>
+                                <option value="1.55">Moderadamente Activo (Ejercicio continuo pero trabajo sedentario)</option>
+                                <option value="1.725">Muy Activo (Ejercicio continuo y trabajo activo)</option>
+                                <option value="1.9">Extra Activo (Ejercicio intenso y trabajo activo)</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label for="objective">Objetivo:</label>
                             <select class="form-control" id="objective">
-                                <option value="-500">Quemar grasa</option>
-                                <option value="0">Mantener resultados</option>
-                                <option value="500">Aumentar musculo</option>
+                                <option value="loose">Quemar grasa</option>
+                                <option value="keep">Mantener resultados</option>
+                                <option value="gain">Aumentar musculo</option>
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-primary">Ver mis resultados</button>
+                        <button type="submit" class="btn btn-primary btn-block">Ver mis resultados</button>
                     </form>
                     <div id="results"></div>
                 </div>
@@ -73,17 +72,27 @@
                 var activity = document.getElementById("activitySelect").value;
                 var objective = document.getElementById("objective").value;
                 var gender = document.getElementById("gender").value;
+                var men = {
+                    loose: -750,
+                    keep: -350,
+                    gain: 200,
+                }
+                var women = {
+                    loose: -550,
+                    keep: -300,
+                    gain: 200,
+                }
 
                 age = Number(age)
                 height = Number(height)
                 weight = Number(weight)
                 activity = Number(activity)
-                objective = Number(objective)
-                gender = Number(gender)
 
-                var calories = 10 * weight + 6.25 * height - 5 * age + gender
+                var objective_cals = gender == "m" ? men[objective] + 5 : women[objective] - 161;
+
+                var calories = 10 * weight + 6.25 * height - 5 * age
                 var tdee = calories * activity
-                var intake = tdee + objective
+                var intake = tdee + objective_cals
                 var protein = (0.35 * intake) / 4;
                 var carbs = (0.4 * intake) / 4;
                 var fats = (0.25 * intake) / 9;
@@ -101,64 +110,65 @@
                 resultsDiv.appendChild(document.createElement("hr"))
 
                 var dashboard = document.createElement("div")
-                var chart = document.createElement(
-                    'canvas',
-                    { 
-                        width: 200,
-                        height: 200
-                    }
-                )
-                var ctx = chart.getContext('2d');
-                var myChart = new Chart(ctx, {
-                    type: 'pie',
-                    data: {
-                        labels: ['Proteina', 'Carbohidratos', 'Grasas'],
-                        datasets: [{
-                            label: 'Macronutrientes',
-                            data: [protein, carbs, fats],
-                            backgroundColor: [
-                                '#0fd43d',
-                                '#1b53e0',
-                                '#db0b3c',
-                            ],
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        tooltips: {
-                            enabled: false
-                        },
-                        plugins: {
-                            datalabels: {
-                                formatter: (value, ctx) => {
-                                    let sum = 0;
-                                    let dataArr = ctx.chart.data.datasets[0].data;
-                                    dataArr.map(data => {
-                                        sum += data;
-                                    });
-                                    let percentage = (value*100 / sum).toFixed(2)+"%";
-                                    return value + " grs";
-                                },
-                                color: '#fff',
-                            }
-                        }
-                    }
-                    });
+                // var chart = document.createElement(
+                //     'canvas',
+                //     { 
+                //         width: 200,
+                //         height: 200
+                //     }
+                // )
+                // var ctx = chart.getContext('2d');
+                // var myChart = new Chart(ctx, {
+                //     type: 'pie',
+                //     data: {
+                //         labels: ['Proteina', 'Carbohidratos', 'Grasas'],
+                //         datasets: [{
+                //             label: 'Macronutrientes',
+                //             data: [protein, carbs, fats],
+                //             backgroundColor: [
+                //                 '#0fd43d',
+                //                 '#1b53e0',
+                //                 '#db0b3c',
+                //             ],
+                //             borderWidth: 1
+                //         }]
+                //     },
+                //     options: {
+                //         tooltips: {
+                //             enabled: false
+                //         },
+                //         plugins: {
+                //             datalabels: {
+                //                 formatter: (value, ctx) => {
+                //                     let sum = 0;
+                //                     let dataArr = ctx.chart.data.datasets[0].data;
+                //                     dataArr.map(data => {
+                //                         sum += data;
+                //                     });
+                //                     let percentage = (value*100 / sum).toFixed(2)+"%";
+                //                     return value + " grs";
+                //                 },
+                //                 color: '#fff',
+                //             }
+                //         }
+                //     }
+                //     });
                 dashboard.innerHTML = `
-                    <h3>TDEE (Gasto de energia): <b>${tdee}</b></h3>
-                    <h3>Total de calorias(según objetivo): <b>${intake}</b></h3>
+                    <h5>Total de calorias: <b>${intake}</b></h5>
                     <br>
-                    <h4>Macronutrientes:</h4>
+                    <h5>Macronutrientes:</h5>
+                    <ul style="list-style: none;">
+                        <li>🥩 <b>Proteina: </b> ${protein} </li>
+                        <li>🍚 <b>Carbohidratos:</b> ${carbs}</li>
+                        <li>🥑 <b>Grasas:</b> ${fats} </li>
+                    </ul>
                 `
-                dashboard.appendChild(chart)
+                // dashboard.appendChild(chart)
                 resultsDiv.appendChild(dashboard)
             }
             form.onsubmit = function (event){
                 event.preventDefault()
                 renderResults(false)
-            }
-            window.onresize = function(event){
-                renderResults(true)
             }
         </script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
