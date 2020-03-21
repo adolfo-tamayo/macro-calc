@@ -43,7 +43,7 @@
                         <div class="form-group">
                             <label for="activitySelect">Nivel de actividad:</label>
                             <select class="form-control" id="activitySelect">
-                                <option value="1.37">Ligeramente Activo (Ejercicio moderado y trabajo sedentario)</option>
+                                <option value="1.375">Ligeramente Activo (Ejercicio moderado y trabajo sedentario)</option>
                                 <option value="1.55">Moderadamente Activo (Ejercicio continuo pero trabajo sedentario)</option>
                                 <option value="1.725">Muy Activo (Ejercicio continuo y trabajo activo)</option>
                                 <option value="1.9">Extra Activo (Ejercicio intenso y trabajo activo)</option>
@@ -73,29 +73,48 @@
                 var objective = document.getElementById("objective").value;
                 var gender = document.getElementById("gender").value;
                 var men = {
-                    loose: -750,
-                    keep: -350,
-                    gain: 200,
+                    loose: -800,
+                    keep: -400,
+                    gain: 150,
                 }
                 var women = {
                     loose: -550,
                     keep: -300,
                     gain: 200,
                 }
+                var fat_ratios = {
+                    loose: 0.3,
+                    keep: 0.3,
+                    muscle: 0.2
+                }
+                var carb_ratios = {
+                    loose: 0.3,
+                    keep: 0.35,
+                    muscle: 0.4
+                }
+                var protein_ratios = {
+                    loose: 0.4,
+                    keep: 0.35,
+                    muscle: 0.4
+                }
 
                 age = Number(age)
                 height = Number(height)
                 weight = Number(weight)
                 activity = Number(activity)
+                
+                var gender_cals = gender == "m" ? 5 : -161;
+                var objective_cals = gender == "m" ? men[objective]: women[objective];
 
-                var objective_cals = gender == "m" ? men[objective] + 5 : women[objective] - 161;
-
-                var calories = 10 * weight + 6.25 * height - 5 * age
+                var calories = 10 * weight + 6.25 * height - 5 * age + gender_cals
+                console.log(calories)
                 var tdee = calories * activity
+                console.log(tdee)
                 var intake = tdee + objective_cals
-                var protein = (0.35 * intake) / 4;
-                var carbs = (0.4 * intake) / 4;
-                var fats = (0.25 * intake) / 9;
+                console.log(intake)
+                var protein = (protein_ratios[objective] * intake) / 4;
+                var carbs = (carb_ratios[objective] * intake) / 4;
+                var fats = (fat_ratios[objective] * intake) / 9;
 
                 calories = Math.round(calories)
                 tdee = Math.round(tdee)
