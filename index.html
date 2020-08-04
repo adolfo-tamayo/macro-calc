@@ -6,7 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
     <body style="font-family: 'Roboto', sans-serif;">
-        <div class="container" id="app">
+        <div class="container" id="calc_app">
             <div class="row">
                 <div class="col-sm" id='myContainer' style="padding: 1em;">
                     <form id="calcform" v-on:submit="onSubmitForm">
@@ -63,7 +63,7 @@
                     <div id="results"></div>
                 </div>
             </div>
-            <div v-if="hasSumbitted">
+            <div v-if="hasSubmitted">
                 <hr />
                 <h5>Total de calorias: <b>{{intake}}</b></h5>
                 <br>
@@ -107,8 +107,9 @@
             }
 
             // Vue app
+            console.log("Initializing macro calculator app...");
             var app = new Vue({ 
-                el: '#app',
+                el: '#calc_app',
                 data: {
                     age: null,
                     height: null,
@@ -116,7 +117,7 @@
                     activity: "1.2",
                     objective: "loose",
                     gender: 'm',
-                    hasSumbitted: false,
+                    hasSubmitted: false,
                     intake: 0,
                     protein: 0,
                     carbs: 0,
@@ -126,11 +127,13 @@
                 methods: {
                     onSubmitForm: function(event){
                         event.preventDefault()
+                        console.log("Form submitted")
                         
                         age = Number(this.age)
                         height = Number(this.height)
                         weight = Number(this.weight)
                         activity = Number(this.activity)
+                        console.log("Received values: ", age, height, weight, activity, this.gender, this.objective)
                         
                         var gender_cals = this.gender == "m" ? 5 : -161;
                         var objective_cals = this.gender == "m" ? men[this.objective]: women[this.objective];
@@ -148,11 +151,11 @@
                         this.protein = Math.round(protein)
                         this.carbs = Math.round(carbs)
                         this.fats = Math.round(fats)
-                        this.hasSumbitted = true
+                        this.hasSubmitted = true
                     }
                 }
             });
-
+            console.log("Macro calculator app running.", app);
         </script>
     </body>
 </html>
