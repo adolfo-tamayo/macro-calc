@@ -4,74 +4,156 @@
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
         <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+            }
+
+            .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+            }
+
+            .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+            }
+
+            .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+            }
+
+            input:checked + .slider {
+            background-color: #2196F3;
+            }
+
+            input:focus + .slider {
+            box-shadow: 0 0 1px #2196F3;
+            }
+
+            input:checked + .slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+            }
+
+            .slider.round {
+            border-radius: 34px;
+            }
+
+            .slider.round:before {
+            border-radius: 50%;
+            }
+
+        </style>
     </head>
     <body style="font-family: 'Roboto', sans-serif;">
         <div class="container" id="calc_app">
-            <div class="row">
+            <div class="row" v-cloak>
                 <div class="col-sm" id='myContainer' style="padding: 1em;">
                     <form id="calcform" v-on:submit="onSubmitForm">
+                        <div class="form-group" style="display: flex; align-items: center; justify-content:left;">
+                            <span style="padding: 0 1rem 0 0;">kg. + cm.</span>
+                            <label class="switch">
+                                <input type="checkbox" v-model="useLbs">
+                                <span class="slider round"></span>
+                            </label>
+                            <span style="padding: 0 0 0 1rem;">lbs. + ft. in.</span>
+
+                        </div>
                         <div class="form-group">
-                            <label for="gender">Sexo:</label>
+                            <label for="gender">{{texts.gender_label}}:</label>
                             <select class="form-control" id="gender" v-model="gender">
-                                <option value="m">Masculino</option>
-                                <option value="f">Femenino</option>
+                                <option value="m">{{texts.gender_male}}</option>
+                                <option value="f">{{texts.gender_female}}</option>
                             </select>
                         </div>
                         <div class="row">
                             <div class="col">
                                 <div class="form-group">
-                                    <label for="age">Edad:</label>
-                                    <input type="number" class="form-control" min="1" max="99" id="age" placeholder="Edad" required v-model="age">
+                                    <label for="age">{{texts.age_label}}:</label>
+                                    <input type="number" class="form-control" min="1" max="99" id="age" :placeholder="texts.age_placeholder" required v-model="age">
                                     <!-- <small id="ageHelp" class="form-text text-muted">Tu edad nos ayuda a determinar tu consumo calórico</small> -->
                                 </div>
                             </div>
                             <div class="col">
                                 <div class="form-group">
-                                    <label for="weight">Peso(kg):</label>
-                                    <input type="number" class="form-control" min="1" id="weight" placeholder="Peso (kg)" required v-model="weight">
+                                    <label for="weight">{{texts.weight_label}}({{ useLbs? "lbs." : "kg"}}):</label>
+                                    <input type="number" class="form-control" min="1" id="weight" :placeholder="useLbs? 'lbs.' : 'kg'" required v-model="weight">
                                     <!-- <small id="ageHelp" class="form-text text-muted">Tu edad nos ayuda a determinar tu consumo calórico</small> -->
                                 </div>
                             </div>
-                            <div class="col"> 
+                            <div class="col" v-if="!useLbs"> 
                                 <div class="form-group">
-                                    <label for="height">Altura(cm):</label>
-                                    <input type="number" class="form-control" min="1" id="height" placeholder="Altura (cm)" required v-model="height">
+                                    <label for="height">{{texts.height_label}}:</label>
+                                    <input type="number" class="form-control" min="1" id="height" placeholder="cm." required v-model="height_cm">
                                     <!-- <small id="ageHelp" class="form-text text-muted">Tu edad nos ayuda a determinar tu consumo calórico</small> -->
+                                </div>
+                            </div>
+                            <div class="col" v-if="useLbs"> 
+                                <div class="form-group">
+                                    <label for="height_ft">{{texts.height_label}}</label>
+                                    <input type="number" class="form-control" min="1" id="height_ft" placeholder="ft." required v-model="height_ft">
+                                </div>
+                            </div>
+                            <div class="col" v-if="useLbs"> 
+                                <div class="form-group">
+                                    <label for="height_in" style="color: transparent;">.</label>
+                                    <input type="number" class="form-control" min="1" id="height_in" placeholder="in." required v-model="height_in">
                                 </div>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="activitySelect">Nivel de actividad:</label>
+                            <label for="activitySelect">{{texts.activity_label}}:</label>
                             <select class="form-control" id="activitySelect" v-model="activity">
-                                <option value="1.2">Sedentario (Poco o nada de ejercicio)</option> 
-                                <option value="1.375">Ligeramente Activo (Ejercicio ligero. 1-3 veces a la semana)</option>
-                                <option value="1.55">Moderadamente Activo (Ejercicio moderado. 3-5 veces a la semana)</option>
-                                <option value="1.725">Muy Activo (Ejercicio fuerte. 6-7 veces a la semana)</option>
-                                <option value="1.9">Extra Activo (Ejercicio muy fuerte + Trabajo fisico diario)</option>
+                                <option value="1.2">{{texts.activity_sedentary}}</option> 
+                                <option value="1.375">{{texts.activity_low_active}}</option>
+                                <option value="1.55">{{texts.activity_mild_active}}</option>
+                                <option value="1.725">{{texts.activity_very_active}}</option>
+                                <option value="1.9">{{texts.activity_extreme_active}}</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="objective">Objetivo:</label>
+                            <label for="objective">{{texts.objective_label}}:</label>
                             <select class="form-control" id="objective" v-model="objective">
-                                <option value="loose">Quemar grasa</option>
-                                <option value="keep">Mantener resultados</option>
-                                <option value="gain">Aumentar musculo</option>
+                                <option value="loose">{{texts.objective_loose}}</option>
+                                <option value="keep">{{texts.objective_maintain}}</option>
+                                <option value="gain">{{texts.objective_gain}}</option>
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-primary btn-block">Ver mis resultados</button>
+                        <button type="submit" class="btn btn-primary btn-block">{{texts.result_button_label}}</button>
                     </form>
                     <div id="results"></div>
                 </div>
             </div>
             <div v-if="hasSubmitted">
                 <hr />
-                <h5>Total de calorias: <b>{{intake}}</b></h5>
+                <h5>{{texts.total_calories}}: <b>{{intake}}</b></h5>
                 <br>
-                <h5>Macronutrientes:</h5>
+                <h5>{{texts.macronutrients}}:</h5>
                 <ul style="list-style: none;">
-                    <li>🥩 <b>Proteina: </b> {{protein}} gramos </li>
-                    <li>🍚 <b>Carbohidratos:</b> {{carbs}} gramos</li>
-                    <li>🥑 <b>Grasas:</b> {{fats}} gramos</li>
+                    <li>🥩 <b>{{texts.protein}}: </b> {{protein}} {{texts.grams}} </li>
+                    <li>🍚 <b>{{texts.carbs}}:</b> {{carbs}} {{texts.grams}}</li>
+                    <li>🥑 <b>{{texts.fats}}:</b> {{fats}} {{texts.grams}}</li>
                 </ul>
             </div>
         </div>
@@ -79,6 +161,65 @@
         <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
         <script>
+            // texts
+            const translations = {
+                en: {
+                    gender_label: "Gender",
+                    gender_male: "Male",
+                    gender_female: "Female",
+                    age_label: "Age",
+                    age_placeholder: "Age",
+                    weight_label: "Weight",
+                    weight_placeholder: "Weight",
+                    height_label: "Height",
+                    height_placeholder: "Height",
+                    activity_label: "Activity level",
+                    activity_sedentary: "Sedentary (little to no activity)",
+                    activity_low_active: "Lightly active (light exercise 1-3 times a week)",
+                    activity_mild_active: "Mildly active (moderate exercise, 3-5 times a week)",
+                    activity_very_active: "Very Active (heavy exercise, 6-7 times a week)",
+                    activity_extreme_active: "Extremely active (very heavy exercise + dairy physical labour)",
+                    objective_label: "Objective",
+                    objective_loose: "Loose",
+                    objective_maintain: "Maintain",
+                    objective_gain: "Gain",
+                    result_button_label: "See results",
+                    total_calories: "Total Calories",
+                    macronutrients: "Macronutrients",
+                    protein: "Protein",
+                    carbs: "Carbohydrates",
+                    fats: "Fats",
+                    grams: "grams"
+                },
+                es:{
+                    gender_label: "Sexo",
+                    gender_male: "Masculino",
+                    gender_female: "Femenino",
+                    age_label: "Edad",
+                    age_placeholder: "Edad",
+                    weight_label: "Peso",
+                    weight_placeholder: "Peso",
+                    height_label: "Altura",
+                    height_placeholder: "Altura",
+                    activity_label: "Nivel de actividad",
+                    activity_sedentary: "Sedentario (Poco o nada de ejercicio)",
+                    activity_low_active: "Ligeramente Activo (Ejercicio ligero. 1-3 veces a la semana)",
+                    activity_mild_active: "Moderadamente Activo (Ejercicio moderado. 3-5 veces a la semana)",
+                    activity_very_active: "Muy Activo (Ejercicio fuerte. 6-7 veces a la semana)",
+                    activity_extreme_active: "Extra Activo (Ejercicio muy fuerte + Trabajo fisico diario)",
+                    objective_label: "Objetivo",
+                    objective_loose: "Quemar grasa",
+                    objective_maintain: "Mantener resultados",
+                    objective_gain: "Ganar musculo",
+                    result_button_label: "Ver resultados",
+                    total_calories: "Total de calorias",
+                    macronutrients: "Macronutrientes",
+                    protein: "Proteina",
+                    carbs: "Carbohidratos",
+                    fats: "Grasas",
+                    grams: "gramos"
+                }
+            }
             // constants
             var men = {
                 loose: -800,
@@ -105,14 +246,38 @@
                 keep: 0.35,
                 gain: 0.4
             }
-
+            const getLang = () => {
+                if(navigator.languages){
+                    for (let idx = 0; idx < navigator.languages.length; idx++) {
+                        const lang = navigator.languages[idx];
+                        if(lang.indexOf("en") >= 0){
+                            return "en"
+                        }
+                        if(lang.indexOf("es") >= 0){
+                            return "es"
+                        }
+                    }
+                    
+                }
+                else if (navigator.language){
+                    if(navigator.language.indexOf("en") >= 0){
+                        return "en"
+                    }
+                    if(navigator.language.indexOf("es") >= 0){
+                        return "es"
+                    }
+                }
+                return "en"
+            }
             // Vue app
-            console.log("Initializing macro calculator app...");
             var app = new Vue({ 
                 el: '#calc_app',
                 data: {
+                    useLbs: false,
                     age: null,
-                    height: null,
+                    height_cm: null,
+                    height_ft: null,
+                    height_in: null,
                     weight: null,
                     activity: "1.2",
                     objective: "loose",
@@ -122,18 +287,16 @@
                     protein: 0,
                     carbs: 0,
                     fats: 0,
-
+                    texts: translations[getLang()]
                 },
                 methods: {
                     onSubmitForm: function(event){
                         event.preventDefault()
-                        console.log("Form submitted")
                         
                         age = Number(this.age)
-                        height = Number(this.height)
+                        height = this.useLbs? 30.68 * Number(this.height_ft) + 2.54 * Number(this.height_in) : Number(this.height_cm)
                         weight = Number(this.weight)
                         activity = Number(this.activity)
-                        console.log("Received values: ", age, height, weight, activity, this.gender, this.objective)
                         
                         var gender_cals = this.gender == "m" ? 5 : -161;
                         var objective_cals = this.gender == "m" ? men[this.objective]: women[this.objective];
@@ -155,7 +318,6 @@
                     }
                 }
             });
-            console.log("Macro calculator app running.", app);
         </script>
     </body>
 </html>
